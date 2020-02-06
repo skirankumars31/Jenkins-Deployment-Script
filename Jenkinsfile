@@ -10,19 +10,38 @@ pipeline {
         nugetApiKey = "0791c8ce-4b4c-458f-9f29-a0be9df03f1d"
         updatePackage = ''
         deployPackage = ''
-        processID = 125
+        processID = ''
+		repo = ''
     }
     stages {
+	
+		stage("Get Process Details") {
+            agent any
+            steps {
+			script {
+                echo "Getting the process details"
+				processID = powershell(returnStdout: true, script:"""Get-UiPathAuthToken -URL '${orchestratorURL}' -WindowsCredentials -Session | Out-Null ; Get-UiPathProcess -Name Kiran-Test_01_KiranTestMiljo | Select-Object -Property Id | Select -ExpandProperty Id """)
+				echo "The Process ID is ${processID}"
+				}
+            }
+        }
+	
+	
         stage("Code Checkout") {
             agent any
             steps {
-                echo "Checking out the code"
+			script {
+			def props = readProperties  file: 'repo.properties'
+			repo= props["${params.Project_Name}"]
+			}
+                echo "Checking out the code from the repo ${repo}"
+				echo "Project name is ${params.Project_Name}"
                 checkout([$class: 'GitSCM',
                 branches: [[name: '*/master']],
                 doGenerateSubmoduleConfigurations: false,
                 extensions: [[$class: 'WipeWorkspace']],
                 submoduleCfg: [],
-                userRemoteConfigs: [[credentialsId: '569219a0-53b5-440f-a9c7-cd296d696641', url: 'https://github.oslo.kommune.no/Kiran-Sukumar/Kiran-Test.git']]
+                userRemoteConfigs: [[credentialsId: '569219a0-53b5-440f-a9c7-cd296d696641', url: "${repo}"]]
                 ])
             }
         }
@@ -50,7 +69,7 @@ pipeline {
                 script {
                 packagePath = powershell(returnStdout: true, script:"(Get-ChildItem '${packageFolder}' -Recurse -Filter '*.nupkg' | Sort-Object LastWriteTime -Descending)[0].Fullname")
                  
-                deployPackage = powershell(returnStdout: true, script:"""Get-UiPathAuthToken -URL https://rpapreprod.oslo.kommune.no -WindowsCredentials -Session
+                deployPackage = powershell(returnStdout: true, script:"""Get-UiPathAuthToken -URL '${orchestratorURL}' -WindowsCredentials -Session
                 Add-UiPathPackage -PackageFile """+"${packagePath}")
             }
              
@@ -64,8 +83,8 @@ pipeline {
             steps {
                 script {
                 updatePackage = powershell(returnStdout: true, script: """
-                Get-UiPathAuthToken -URL https://rpapreprod.oslo.kommune.no -WindowsCredentials -Session
-                Update-UiPathProcess -Id 125 -Latest""")
+                Get-UiPathAuthToken -URL '${orchestratorURL}' -WindowsCredentials -Session
+                Update-UiPathProcess -Id '${processID}' -Latest""")
             }
             }
         }

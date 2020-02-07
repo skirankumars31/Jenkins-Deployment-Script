@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent any
     environment {         
         branch = 'master'
         packagePath = ''
@@ -95,6 +95,12 @@ pipeline {
             echo "Disconnecting the Robot"
             bat 'UiRobot.exe disconnect'
             }
+        }
+    }
+	
+	post {
+        always {
+            deleteDir() /* clean up our workspace */
         }
     }
 }

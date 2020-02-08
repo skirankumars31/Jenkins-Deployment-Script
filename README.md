@@ -12,15 +12,10 @@ Skript er invokert fra Jenkins med en Process Name Build Parameter. Skript hente
 
 Pipeline deployment trenger en Windows maskin med følgende verktøy
 
-- Jenkins
-
-- UiPath Powershell
-
-- Uipath Robot
-
-- Kobling til Orchestrator
-
-- Service Bruker i Orchestrator med tilgang til publisering og oppdatering 
+* Jenkins
+* UiPath Powershell
+* Uipath Robot med kobling mulighet til Orchestrator
+* Service Bruker i Orchestrator med tilgang til publisering og oppdatering
 
 ## Build Parameters i Jenkins
 
@@ -32,7 +27,7 @@ Clone repo, legg inn et property med process navn i repo.properties , sende inn 
 
 ## Stegene i Pipeline Script
 
-* Get Process Details - Henter Process ID fra Orchestrator 
+* Get Process Details - Henter Process ID fra Orchestrator
 * Code Checkout  - Sjekker ut kode fra GIT repository
 * Koble til Orchestrator - Uipath trenger en robot lisens for å pakke nuget fra kilde koden. Dette steg henter en lisens fra Orchestrator
 * Bygge Pakke  - Denne steg bygger opp nuget pakke ved bruk av Uipath Command line mode
